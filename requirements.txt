@@ -1,0 +1,9 @@
+ffmpeg-python==0.2.0
+git+https://github.com/linto-ai/whisper-timestamped
+Flask==2.2.3
+Flask-Cors==3.0.10
+gunicorn==20.1.0
+pyphen==0.14.0
+torch
+torchvision
+torchaudio
