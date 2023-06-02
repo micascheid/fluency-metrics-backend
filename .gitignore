@@ -1,2 +1,5 @@
 # Ignore audio files
 audio/**
+
+# Playground files
+playground.py
