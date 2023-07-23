@@ -72,7 +72,7 @@ def get_transcription():
 
 @app.route('/manual_transcription', methods=['POST'])
 def manual_transcription():
-    manual_transcription_words = request.json.get("data").split(" ")
+    manual_transcription_words = request.json.get("data").strip().split(" ")
     transcription_obj = {}
     for index, word in enumerate(manual_transcription_words):
         syllable_count = count_syllables(word)
