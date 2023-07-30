@@ -30,7 +30,7 @@ def get_total_syllables(raw_transcription):
 
 def audio_transcribe(audiofile):
     audio = wt.load_audio(audiofile)
-    model = wt.load_model("small.en", device="cpu")
+    model = wt.load_model("medium.en", device="cpu")
 
     return wt.transcribe(model, audio, language="en", temperature=0, beam_size=5, best_of=5)
 
