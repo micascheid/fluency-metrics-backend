@@ -3,3 +3,6 @@ audio/**
 
 # Playground files
 playground.py
+
+# Environment variables
+.env
