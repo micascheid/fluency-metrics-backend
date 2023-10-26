@@ -152,6 +152,19 @@ def handle_customer_subscription_updated(event):
     print(event_type)
     upgrade_obj = event['data']['object']
 
+    stripe_id = upgrade_obj.customer
+    subscription_end_time = upgrade_obj.current_period_end
+    subscription_type = 1 if upgrade_obj['plan']['interval'] == 'month' else 2
+
+    update_obj = {
+        'subscription_end_time': subscription_end_time,
+        'subscription_type': subscription_type
+    }
+
+    try:
+        update_user_subscription(stripe_id, update_obj, event_type)
+    except ValueError as error:
+        print(f"Issue handling {event_type}:", error)
 
 
 
@@ -195,7 +208,7 @@ def base():
     return 'SUCCESS'
 
 
-@app.route('/get_transcription2', methods=['POST'])
+@app.route('/get_auto_transcription', methods=['POST'])
 def get_transcription2():
     quick = True
     if not quick:
