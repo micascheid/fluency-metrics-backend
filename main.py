@@ -23,10 +23,10 @@ PYPHEN_DICT = pyphen.Pyphen(lang='en')
 #local testing
 app = Flask(__name__)
 os.environ['FIRESTORE_EMULATOR_HOST'] = "localhost:8080"
-CLIENT1 = "http://localhost:3000"
+CLIENT = "http://localhost:3000"
 #PRODUCTION
-# CLIENT1 = "https://app.fluencymetrics.com"
-# cors = CORS(app, resources={"/*": {"origins": [CLIENT1]}})
+# CLIENT = "https://app.fluencymetrics.com"
+# cors = CORS(app, resources={"/*": {"origins": [CLIENT]}})
 # Firebase credentials
 cred = credentials.Certificate("./firebase_credentials.json")
 firebase_admin.initialize_app(cred)
@@ -59,7 +59,7 @@ def update_user_subscription(stripe_id, update_obj, event_type):
     users_ref = db.collection('users')
     #This query should only ever return one document array length == 1
 
-    user_documents = users_ref.where('subscription.stripe_id', '==', stripe_id).get()
+    user_documents = users_ref.where(field_path='subscription.stripe_id', op_string='==', value=stripe_id).get()
 
     '''
     in the case that invoid.paid is triggered right after checkout.completed it will throw error 
@@ -67,7 +67,7 @@ def update_user_subscription(stripe_id, update_obj, event_type):
     the users subscription object. Expect no matching user found error if a user first signs up
     '''
     if not user_documents:
-        raise ValueError(f"⚠️ No matching user found for stripe_id while handling event {event_type}:", stripe_id)
+        print(f"⚠️ No matching user found for stripe_id while handling event {event_type}:", stripe_id)
     elif len(user_documents) > 1:
         raise ValueError(f"⚠️ Multiple users found for stripe_id while handling event {event_type}:", stripe_id)
     else:
@@ -122,6 +122,7 @@ def handle_invoice_paid(event):
 
     try:
         update_user_subscription(stripe_id, update_obj, event_type)
+        print("invoice paid successful")
     except ValueError as error:
         print(f"Issue handling {event_type}:", error)
 
@@ -145,7 +146,6 @@ def handle_invoice_payment_failed(event):
     print('invoice payment failed')
 
 
-# Commented out for now. Refer to ticket 9
 def handle_customer_subscription_updated(event):
     # handles upgrades and or downgrades
     event_type = "customer_subscription_updated"
@@ -153,19 +153,19 @@ def handle_customer_subscription_updated(event):
     upgrade_obj = event['data']['object']
 
     stripe_id = upgrade_obj.customer
+
     subscription_end_time = upgrade_obj.current_period_end
-    subscription_type = 1 if upgrade_obj['plan']['interval'] == 'month' else 2
+    subscription_type_int = 1 if upgrade_obj['plan']['interval'] == 'month' else 2
 
     update_obj = {
-        'subscription_end_time': subscription_end_time,
-        'subscription_type': subscription_type
+        'subscription.subscription_end_time': subscription_end_time,
+        'subscription.subscription_type': subscription_type_int
     }
 
     try:
         update_user_subscription(stripe_id, update_obj, event_type)
     except ValueError as error:
         print(f"Issue handling {event_type}:", error)
-
 
 
 def handle_customer_subscription_deleted(event):
@@ -340,7 +340,7 @@ def customer_portal():
 
     portal_session = stripe.billing_portal.Session.create(
         customer=f"{customer_id}",
-        return_url=f"{CLIENT1}/pricing"
+        return_url=f"{CLIENT}/tool"
     )
 
     return jsonify({"portal_url": portal_session.url})
