@@ -7,7 +7,6 @@ import pyphen
 import cmudict
 import stripe
 import json
-# from nltk.corpus import cmudict
 from dotenv import load_dotenv
 import firebase_admin
 from firebase_admin import firestore
@@ -15,7 +14,6 @@ from firebase_admin import credentials
 from firebase_admin import exceptions as firestore_exceptions
 from stripe.error import StripeError
 from types import SimpleNamespace
-import time
 
 load_dotenv()
 CMU_DICT = cmudict.dict()
@@ -210,7 +208,7 @@ def base():
 
 @app.route('/get_auto_transcription', methods=['POST'])
 def get_transcription2():
-    quick = True
+    quick = False
     if not quick:
         if 'file' not in request.files:
             return "No file part", 400
