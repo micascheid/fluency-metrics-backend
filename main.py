@@ -20,16 +20,17 @@ CMU_DICT = cmudict.dict()
 PYPHEN_DICT = pyphen.Pyphen(lang='en')
 #local testing
 app = Flask(__name__)
-os.environ['FIRESTORE_EMULATOR_HOST'] = "localhost:8080"
-CLIENT = "http://localhost:3000"
+# os.environ['FIRESTORE_EMULATOR_HOST'] = "localhost:8080"
+# CLIENT = "http://localhost:3000"
+
 #PRODUCTION
-# CLIENT = "https://app.fluencymetrics.com"
-# cors = CORS(app, resources={"/*": {"origins": [CLIENT]}})
+CLIENT = "https://app.fluencymetrics.com"
+cors = CORS(app, resources={"/*": {"origins": [CLIENT]}})
 # Firebase credentials
 cred = credentials.Certificate("./firebase_credentials.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
-CORS(app)
+# CORS(app)
 DEEPGRAM_API_KEY = os.environ.get('DEEPGRAM_API_KEY')
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
 STRIPE_END_POINT_KEY = os.environ.get('STRIPE_END_POINT_KEY')
@@ -37,7 +38,7 @@ stripe.api_key = STRIPE_API_KEY
 endpoint_secret = STRIPE_END_POINT_KEY
 APP_DIR = os.path.abspath(os.path.dirname(__file__))
 dg_client = Deepgram(DEEPGRAM_API_KEY)
-
+SUBSCRIPTION_STATUS = SimpleNamespace(TRIAL="trial", ACTIVE="active", INACTIVE="inactive")
 
 WORD_DIC = pyphen.Pyphen(lang='en')
 
