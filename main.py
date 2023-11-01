@@ -77,18 +77,18 @@ def handle_checkout_session_completed(event):
     try:
         print('checkout session')
         session = event['data']['object']
-        user_id = session.client_reference_id
-        subscription_id = session.subscription
+        user_id = session['client_reference_id']
+        subscription_id = session['subscription']
 
         subscription_obj = stripe.Subscription.retrieve(subscription_id)
         sub_type = subscription_type(subscription_obj)
-        end = subscription_obj.current_period_end
+        end = subscription_obj['current_period_end']
 
         user_ref = db.collection('users').document(user_id)
         update_obj = {
             'subscription.subscription_end_time': end,
             'subscription.subscription_status': SUBSCRIPTION_STATUS.ACTIVE,
-            'subscription.stripe_id': subscription_obj.customer,
+            'subscription.stripe_id': subscription_obj['customer'],
             'subscription.subscription_type': sub_type
         }
         user_ref.update(update_obj)
@@ -104,12 +104,13 @@ def handle_invoice_paid(event):
     event_type = "invoice_paid"
     print(event_type)
     invoice = event['data']['object']
-    subscription_id = invoice.subscription
+    print("Invoice", invoice)
+    subscription_id = invoice['subscription']
     subscription_obj = stripe.Subscription.retrieve(subscription_id)
     sub_type = subscription_type(subscription_obj)
 
-    current_period_end = subscription_obj.current_period_end
-    stripe_id = subscription_obj.customer
+    current_period_end = subscription_obj['current_period_end']
+    stripe_id = subscription_obj['customer']
 
     update_obj = {
         'subscription.subscription_end_time': current_period_end,
@@ -127,9 +128,9 @@ def handle_invoice_paid(event):
 def handle_invoice_payment_failed(event):
     event_type = "invoice_payment_failed"
     invoice = event['data']['object']
-    subscription_id = invoice.subscription
+    subscription_id = invoice['subscription']
     subscription_obj = stripe.Subscription.retrieve(subscription_id)
-    stripe_id = subscription_obj.customer
+    stripe_id = subscription_obj['customer']
 
     update_obj = {
         'subscription.subscription_status': SUBSCRIPTION_STATUS.INACTIVE
@@ -149,9 +150,9 @@ def handle_customer_subscription_updated(event):
     print(event_type)
     upgrade_obj = event['data']['object']
 
-    stripe_id = upgrade_obj.customer
+    stripe_id = upgrade_obj['customer']
 
-    subscription_end_time = upgrade_obj.current_period_end
+    subscription_end_time = upgrade_obj['current_period_end']
     subscription_type_int = 1 if upgrade_obj['plan']['interval'] == 'month' else 2
 
     update_obj = {
@@ -170,11 +171,11 @@ def handle_customer_subscription_deleted(event):
     event_type = "customer_subscription_deleted"
 
     event_obj = event['data']['object']
-    stripe_id = event_obj.customer
+    stripe_id = event_obj['customer']
 
     # When user cancels they get to use till end of period cancel_end_of_period will always be true for now
     # but may want to handle this differently in the future if I prorate subscription back to them
-    cancel_end_of_period = event_obj.cancel_at_period_end
+
 
     update_obj = {
         'subscription.subscription_status': SUBSCRIPTION_STATUS.INACTIVE
