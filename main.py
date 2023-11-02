@@ -102,7 +102,6 @@ def handle_checkout_session_completed(event):
 
 def handle_invoice_paid(event):
     event_type = "invoice_paid"
-    print(event_type)
     invoice = event['data']['object']
     print("Invoice", invoice)
     subscription_id = invoice['subscription']
